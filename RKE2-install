@@ -1,9 +1,9 @@
 
 #apt update
 #apt -y install curl vim wget ssh
-#hostnamectl set-hostname rke2-master01.glotech.com
-#hostnamectl set-hostname rke2-master02.glotech.com
+#hostnamectl set-hostname rke2-master.glotech.com
 #hostnamectl set-hostname rke2-worker01.glotech.com
+#hostnamectl set-hostname rke2-worker02.glotech.com
 
 
 
@@ -15,9 +15,9 @@ Set up the First Server Node (Master Node)
 
 
 #vi /etc/hosts
-192.168.150.60 rke2-master01.glotech.com
-192.168.150.61 rke2-master02.glotech.com
-192.168.150.62 rke2-worker01.glotech.com
+192.168.150.60 rke2-master.glotech.com
+192.168.150.61 rke2-worker01.glotech.com
+192.168.150.62 rke2-worker02.glotech.com
 
 curl -sfL https://get.rke2.io --output install.sh
 chmod +x install.sh
@@ -30,7 +30,7 @@ sudo INSTALL_RKE2_TYPE=server ./install.sh
 #sudo vim /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
 tls-san:
-  - rke2-master01.glotech.com
+  - rke2-master.glotech.com
   - 192.168.150.60
 
   
