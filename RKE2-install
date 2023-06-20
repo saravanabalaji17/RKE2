@@ -1,4 +1,33 @@
 
+What Is RKE2?
+
+RKE2 is an open-source Kubernetes distribution from Rancher.
+It is designed to make it easier for developers and administrators to launch, manage, and maintain clusters of any size. 
+RKE2 is built on proven Kubernetes components and provides a tightly integrated user experience that’s focused on flexibility, scalability, and security.
+
+RKE2 offers a wide range of features and capabilities to organizations of all sizes. Some of these include:
+
+Automatic scaling – Automatically scale your clusters to match the needs of your workloads
+Advanced security – Ensure the security of your data and resources through authentication, encryption, and other security measures
+Easy deployment – Deploy your Kubernetes clusters with the push of a button
+Easy operations – Manage your clusters with built-in tools and APIs
+Highly available clusters – Make sure your clusters are always up and running
+Support for multiple cloud providers – Choose the best cloud provider for your business needs
+
+
+With RKE2, you can quickly and easily build, manage, and scale Kubernetes clusters. 
+It’s a great solution for organizations of all sizes, from small startups to large enterprises. 
+So if you’re looking for an easy and secure way to run Kubernetes, RKE2 is definitely worth considering.
+
+
+
+
+
+
+
+
+
+
 #apt update
 #apt -y install curl vim wget ssh
 #hostnamectl set-hostname rke2-master.glotech.com
