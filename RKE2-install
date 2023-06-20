@@ -36,6 +36,9 @@ So if you’re looking for an easy and secure way to run Kubernetes, RKE2 is def
 
 
 
+Steps to install RKE2
+==========================
+
 
 
 Set up the First Server Node (Master Node)
