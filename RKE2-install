@@ -28,11 +28,11 @@ So if you’re looking for an easy and secure way to run Kubernetes, RKE2 is def
 
 
 
-#apt update
-#apt -y install curl vim wget ssh
-#hostnamectl set-hostname rke2-master.glotech.com
-#hostnamectl set-hostname rke2-worker01.glotech.com
-#hostnamectl set-hostname rke2-worker02.glotech.com
+# apt update
+# apt -y install curl vim wget ssh
+# hostnamectl set-hostname rke2-master.glotech.com
+# hostnamectl set-hostname rke2-worker01.glotech.com
+# hostnamectl set-hostname rke2-worker02.glotech.com
 
 
 
@@ -43,20 +43,20 @@ Set up the First Server Node (Master Node)
 
 
 
-#vi /etc/hosts
+# vi /etc/hosts
 192.168.150.60 rke2-master.glotech.com
 192.168.150.61 rke2-worker01.glotech.com
 192.168.150.62 rke2-worker02.glotech.com
 
-curl -sfL https://get.rke2.io --output install.sh
-chmod +x install.sh
-sudo INSTALL_RKE2_TYPE=server ./install.sh
+# curl -sfL https://get.rke2.io --output install.sh
+# chmod +x install.sh
+# sudo INSTALL_RKE2_TYPE=server ./install.sh
 
 
 
 
-#mkdir -p /etc/rancher/rke2
-#sudo vim /etc/rancher/rke2/config.yaml
+# mkdir -p /etc/rancher/rke2
+# sudo vim /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
 tls-san:
   - rke2-master.glotech.com
@@ -66,25 +66,26 @@ tls-san:
   
 
 	
-sudo systemctl start rke2-server
-sudo systemctl enable rke2-server
-systemctl start rke2-server && systemctl enable rke2-server
+# sudo systemctl start rke2-server
+# sudo systemctl enable rke2-server
+(OR)
+# systemctl start rke2-server && systemctl enable rke2-server
 
-kubectl get nodes
-kubectl get pods -A
+# kubectl get nodes
+# kubectl get pods -A
 
- cp /etc/rancher/rke2/rke2.yaml .kube/config
- cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
+# cp /etc/rancher/rke2/rke2.yaml .kube/config
+# cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
 
-/var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml get po -A
+# /var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml get po -A
 
 
-export PATH=/var/lib/rancher/rke2/bin:$PATH
-export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+# export PATH=/var/lib/rancher/rke2/bin:$PATH
+# export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 
 get token
 ============
-cat /var/lib/rancher/rke2/server/node-token
+# cat /var/lib/rancher/rke2/server/node-token
 
 
 
@@ -97,7 +98,7 @@ cat /var/lib/rancher/rke2/server/node-token
 Set up Agent Nodes (Worker Nodes01)
 ====================================
 
-#vi /etc/hosts
+# vi /etc/hosts
 192.168.150.60 rke2-master.glotech.com
 192.168.150.61 rke2-worker01.glotech.com
 192.168.150.62 rke2-worker02.glotech.com
@@ -105,22 +106,24 @@ Set up Agent Nodes (Worker Nodes01)
 
 
 
-#curl -sfL https://get.rke2.io --output install.sh
-#chmod +x install.sh
-#sudo INSTALL_RKE2_TYPE=agent ./install.sh
+# curl -sfL https://get.rke2.io --output install.sh
+# chmod +x install.sh
+# sudo INSTALL_RKE2_TYPE=agent ./install.sh
 
-#mkdir -p /etc/rancher/rke2
-#vim /etc/rancher/rke2/config.yaml
+# mkdir -p /etc/rancher/rke2
+# vim /etc/rancher/rke2/config.yaml
 server: https://rke2-master.glotech.com:9345
 token: K1003a8d2dee002b45f0181ddbc7e5a8982b2a2134578deeb4e817f1284d3a84a20::server:bfad997559e0ca2efdb6bada33df39d5
 
 
 
 
-sudo systemctl start rke2-agent && systemctl enable rke2-agent
-sudo systemctl enable rke2-agent
+# sudo systemctl start rke2-agent && systemctl enable rke2-agent
+# sudo systemctl enable rke2-agent
 
-journalctl -u rke2-agent -f
+check logs
+============
+# journalctl -u rke2-agent -f
 
 
 
@@ -135,22 +138,22 @@ Set up Agent Nodes (Worker Nodes02)
 
 
 
-#curl -sfL https://get.rke2.io --output install.sh
-#chmod +x install.sh
-#sudo INSTALL_RKE2_TYPE=agent ./install.sh
+# curl -sfL https://get.rke2.io --output install.sh
+# chmod +x install.sh
+# sudo INSTALL_RKE2_TYPE=agent ./install.sh
 
-#mkdir -p /etc/rancher/rke2
-#vim /etc/rancher/rke2/config.yaml
+# mkdir -p /etc/rancher/rke2
+# vim /etc/rancher/rke2/config.yaml
 server: https://rke2-master.glotech.com:9345
 token: K1003a8d2dee002b45f0181ddbc7e5a8982b2a2134578deeb4e817f1284d3a84a20::server:bfad997559e0ca2efdb6bada33df39d5
 
 
 
 
-sudo systemctl start rke2-agent && systemctl enable rke2-agent
-sudo systemctl enable rke2-agent
+# sudo systemctl start rke2-agent && systemctl enable rke2-agent
+# sudo systemctl enable rke2-agent
 
-journalctl -u rke2-agent -f
+# journalctl -u rke2-agent -f
 
 
 
