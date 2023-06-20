@@ -69,9 +69,9 @@ Set up Agent Nodes (Worker Nodes01)
 ====================================
 
 #vi /etc/hosts
-192.168.150.60 rke2-master01.glotech.com
-192.168.150.61 rke2-master02.glotech.com
-192.168.150.62 rke2-worker01.glotech.com
+192.168.150.60 rke2-master.glotech.com
+192.168.150.61 rke2-worker01.glotech.com
+192.168.150.62 rke2-worker02.glotech.com
 
 
 
@@ -82,7 +82,7 @@ Set up Agent Nodes (Worker Nodes01)
 
 #mkdir -p /etc/rancher/rke2
 #vim /etc/rancher/rke2/config.yaml
-server: https://rke2-master01.glotech.com:9345
+server: https://rke2-master.glotech.com:9345
 token: K1003a8d2dee002b45f0181ddbc7e5a8982b2a2134578deeb4e817f1284d3a84a20::server:bfad997559e0ca2efdb6bada33df39d5
 
 
@@ -99,9 +99,9 @@ Set up Agent Nodes (Worker Nodes02)
 ====================================
 
 #vi /etc/hosts
-192.168.150.60 rke2-master01.glotech.com
-192.168.150.61 rke2-master02.glotech.com
-192.168.150.62 rke2-worker01.glotech.com
+192.168.150.60 rke2-master.glotech.com
+192.168.150.61 rke2-worker01.glotech.com
+192.168.150.62 rke2-worker02.glotech.com
 
 
 
@@ -112,7 +112,7 @@ Set up Agent Nodes (Worker Nodes02)
 
 #mkdir -p /etc/rancher/rke2
 #vim /etc/rancher/rke2/config.yaml
-server: https://rke2-master01.glotech.com:9345
+server: https://rke2-master.glotech.com:9345
 token: K1003a8d2dee002b45f0181ddbc7e5a8982b2a2134578deeb4e817f1284d3a84a20::server:bfad997559e0ca2efdb6bada33df39d5
 
 
