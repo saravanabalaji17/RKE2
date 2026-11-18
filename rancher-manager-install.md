@@ -89,6 +89,11 @@ tls-san:
   - rancher.example.com
   - rke2.example.com
   - 192.168.44.100
+
+kubelet-arg:
+  -  container-log-max-files=5
+  -  container-log-max-size=10Mi
+write-kubeconfig-mode: "0644"
 ```
 
 Install:
