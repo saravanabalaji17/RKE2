@@ -508,3 +508,209 @@ Official references:
 - [RKE2 ingress controllers](https://docs.rke2.io/networking/networking_services?_highlight=ingress\&utm_source=chatgpt.com)
 
 **One detail to confirm before you implement this:** Are you planning to use Ubuntu 24.04 on all three nodes? I can then provide the complete copy-paste installation procedure with Keepalived health checks and Rancher installation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version compatibility confirmed
+
+Your selected versions are compatible:
+
+| Component       | Required version          |
+| --------------- | ------------------------- |
+| RKE2            | `v1.35.7+rke2r1`          |
+| Kubernetes      | `v1.35.7`                 |
+| Rancher Manager | `v2.15.1`                 |
+| Keepalived      | Ubuntu repository version |
+| Helm            | Helm 3                    |
+
+Rancher 2.15.1 explicitly includes RKE2 Kubernetes 1.35.7 in its supported versions.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://documentation.suse.com\&sz=32)
+
+SUSE® Rancher Manager v2.15+1
+
+
+
+## **1. Three-node configuration**
+
+We will continue with this design:
+
+| Hostname  | IP             | Keepalived priority |
+| --------- | -------------- | ------------------- |
+| rancher01 | 192.168.44.21  | 150                 |
+| rancher02 | 192.168.44.22  | 140                 |
+| rancher03 | 192.168.44.23  | 130                 |
+| VIP       | 192.168.44.100 | Floating            |
+
+DNS:
+
+```
+rancher.example.com -> 192.168.44.100
+rke2.example.com    -> 192.168.44.100
+```
+
+## **2. Install exact RKE2 version**
+
+Run on all three nodes, after preparing the appropriate RKE2 configuration files:
+
+```
+curl -sfL https://get.rke2.io | \
+sudo env INSTALL_RKE2_VERSION="v1.35.7+rke2r1" sh -
+```
+
+### **Node 1: rancher01**
+
+`/etc/rancher/rke2/config.yaml`
+
+```
+token: "Rancher-HA-Secret-ChangeMe"
+
+tls-san:
+  - rancher.example.com
+  - rke2.example.com
+  - 192.168.44.100
+```
+
+Start:
+
+```
+sudo systemctl enable --now rke2-server
+```
+
+### **Node 2: rancher02**
+
+```
+server: https://rke2.example.com:9345
+
+token: "Rancher-HA-Secret-ChangeMe"
+
+tls-san:
+  - rancher.example.com
+  - rke2.example.com
+  - 192.168.44.100
+```
+
+Start:
+
+```
+sudo systemctl enable --now rke2-server
+```
+
+### **Node 3: rancher03**
+
+Use the same configuration as node 2.
+
+```
+sudo systemctl enable --now rke2-server
+```
+
+All three nodes must have the exact same RKE2 version.
+
+## **3. Verify RKE2**
+
+On rancher01:
+
+```
+export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+
+kubectl get nodes -o wide
+```
+
+Check:
+
+```
+kubectl get pods -A
+```
+
+## **4. Install Rancher Manager 2.15.1**
+
+Add repository:
+
+```
+helm repo add rancher-stable \
+https://releases.rancher.com/server-charts/stable
+
+helm repo update
+```
+
+Verify chart availability:
+
+```
+helm search repo rancher-stable/rancher --versions | grep 2.15.1
+```
+
+Create namespace:
+
+```
+kubectl create namespace cattle-system
+```
+
+Install Rancher:
+
+```
+helm install rancher rancher-stable/rancher \
+  --namespace cattle-system \
+  --version 2.15.1 \
+  --set hostname=rancher.example.com \
+  --set replicas=3 \
+  --set bootstrapPassword='ChangeThisStrongPassword' \
+  --set ingress.tls.source=rancher
+```
+
+If you are using the Rancher Prime distribution, use the authenticated `rancher-prime` repository instead; its chart name is also `rancher`.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://rancher.github.io\&sz=32)
+
+SUSE® Rancher Manager v2.15+1
+
+
+
+## **5. Verify Rancher**
+
+```
+kubectl get pods -n cattle-system -o wide
+```
+
+```
+kubectl get deployment rancher -n cattle-system
+```
+
+Expected:
+
+```
+NAME      READY   UP-TO-DATE   AVAILABLE
+rancher   3/3     3            3
+```
+
+Access:
+
+```
+https://rancher.example.com
+```
+
+**Important:** Keepalived must monitor RKE2/API and ingress health, not just the node. Otherwise, a failed service on the VIP owner could leave the VIP there. Also configure Rancher replica spreading across the three nodes.
+
+Official references:
+
+- [RKE2 1.35.7 release notes](https://documentation.suse.com/cloudnative/rke2/latest/en/release-notes/v1.35.X.html?utm_source=chatgpt.com)
+- [Rancher 2.15.1 compatibility matrix](https://www.suse.com/suse-rancher/support-matrix/all-supported-versions/rancher-v2-15-1/?utm_source=chatgpt.com)
+- [Rancher 2.15 installation guide](https://documentation.suse.com/cloudnative/rancher-manager/latest/en/installation-and-upgrade/install-rancher.html?utm_source=chatgpt.com)
