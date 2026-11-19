@@ -637,3 +637,24 @@ spec:
 
 
 
+
+
+# Check nodes
+kubectl get nodes -o wide
+
+# Check Calico
+kubectl get pods -n kube-system | grep calico
+
+# Check ingress controllers
+kubectl get pods -A | grep -E 'traefik|ingress-nginx'
+
+# Check ingress classes
+kubectl get ingressclass
+
+# Check Helm charts
+kubectl get helmcharts -n kube-system
+
+# Check cluster health
+kubectl get componentstatuses
+
+
