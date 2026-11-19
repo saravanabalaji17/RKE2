@@ -345,8 +345,48 @@ root@rancher003:~#
 systemctl enable --now keepalived
 ip addr show ens160
 
+------------------------------------------------------------
 
 
+# RKE2 Server Configuration
+# /etc/rancher/rke2/config.yaml
+
+# Kubernetes networking
+cni: calico
+
+cluster-cidr: 10.42.0.0/16
+service-cidr: 10.43.0.0/16
+cluster-dns: 10.43.0.10
+cluster-domain: cluster.local
+
+# Ingress controllers
+# First controller becomes the default ingress class
+ingress-controller:
+  - traefik
+  - ingress-nginx
+
+# Kubernetes API certificates
+tls-san:
+  - rancher.vspheretech.com
+  - 192.168.1.30
+  - rancher001.vspheretech.com
+  - 192.168.1.31
+  - rancher002.vspheretech.com
+  - 192.168.1.32
+  - rancher003.vspheretech.com
+
+# Kubelet logging
+kubelet-arg:
+  - "container-log-max-files=5"
+  - "container-log-max-size=10Mi"
+
+# Kubeconfig permissions
+write-kubeconfig-mode: "0644"
+
+# Disable RKE2 ServiceLB if using external load balancer
+disable:
+  - rke2-ingress-nginx
+-----------------------------------------------------------
 
 rancher001.vspheretech.com
 ================================
@@ -356,7 +396,9 @@ sudo mkdir -p /etc/rancher/rke2
 sudo vi /etc/rancher/rke2/config.yaml
 
 
-~# cat /etc/rancher/rke2/config.yaml
+# cat /etc/rancher/rke2/config.yaml
+# rancher001
+cluster-init: true
 tls-san:
   - rancher.vspheretech.com
   - 192.168.1.30
@@ -441,6 +483,16 @@ systemctl enable --now rke2-server
 
 
 
+# ls -l /var/lib/rancher/rke2/server/manifests
+total 236
+-rw-r--r-- 1 root root 60782 Nov 19 19:14 rke2-canal.yaml
+-rw-r--r-- 1 root root 28381 Nov 19 19:14 rke2-coredns.yaml
+-rw-r--r-- 1 root root 70844 Nov 19 19:14 rke2-ingress-nginx.yaml
+-rw-r--r-- 1 root root 19059 Nov 19 19:14 rke2-metrics-server.yaml
+-rw-r--r-- 1 root root  7557 Nov 19 19:14 rke2-runtimeclasses.yaml
+-rw-r--r-- 1 root root 21877 Nov 19 19:14 rke2-snapshot-controller-crd.yaml
+-rw-r--r-- 1 root root 20465 Nov 19 19:14 rke2-snapshot-controller.yaml
+-rw-r--r-- 1 root root    52 Nov 19 19:14 rke2-snapshot-validation-webhook.yaml
 
 
 /var/lib/rancher/rke2/bin/kubectl get node --kubeconfig=/etc/rancher/rke2/rke2.yaml
@@ -518,6 +570,70 @@ helm upgrade
   168  kubectl rollout status deployment/rancher -n cattle-system
   169  kubectl get deployment rancher -n cattle-system   -o jsonpath='{.spec.template.spec.containers[0].image}'
   1
+
+====================================================================================================================================================================
+Traefik configuration
+========================
+
+
+#vi /var/lib/rancher/rke2/server/manifests/rke2-traefik-config.yaml
+
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    deployment:
+      replicas: 3
+
+    service:
+      type: NodePort
+
+    ports:
+      web:
+        port: 8000
+        exposedPort: 80
+      websecure:
+        port: 8443
+        exposedPort: 443
+
+    providers:
+      kubernetesIngress:
+        enabled: true
+        ingressClass: traefik
+
+
+NGINX Ingress configuration
+=============================
+
+
+# vi /var/lib/rancher/rke2/server/manifests/rke2-ingress-nginx-config.yaml
+
+
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-ingress-nginx
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    controller:
+      replicaCount: 3
+
+      ingressClass: nginx
+
+      ingressClassResource:
+        name: nginx
+        enabled: true
+        default: false
+
+      service:
+        type: NodePort
+
+      config:
+        use-forwarded-headers: "true"
 
 
 
