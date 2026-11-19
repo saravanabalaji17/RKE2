@@ -158,6 +158,366 @@ token: K1003a8d2dee002b45f0181ddbc7e5a8982b2a2134578deeb4e817f1284d3a84a20::serv
 
 # journalctl -u rke2-agent -f
 
+====================================================================================================================================================================
+
+
+
+rancher manager install on macbook
+=====================================
+
+
+root@rancher001:~# cat /etc/netplan/50-cloud-init.yaml
+network:
+  version: 2
+  ethernets:
+    ens160:
+      dhcp4: false
+      addresses:
+        - 192.168.1.31/24
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+    ens256:
+#      dhcp4: true
+      dhcp4: false
+      addresses:
+        - 172.16.182.31/16
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+
+
+
+
+hostnamectl set-hostname rancher001.vspheretech.com
+hostnamectl set-hostname rancher002.vspheretech.com
+hostnamectl set-hostname rancher003.vspheretech.com
+
+192.168.1.30 rancher.vspheretech.com
+192.168.1.31 rancher001.vspheretech.com
+192.168.1.32 rancher002.vspheretech.com
+192.168.1.33 rancher003.vspheretech.com
+
+
+
+ export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+
+
+apt update
+apt install -y keepalived
+ip -br addr
+vi /etc/keepalived/keepalived.conf
+cat /etc/keepalived/keepalived.conf
+sudo systemctl enable --now keepalived
+sudo systemctl status keepalived
+ip addr show ens160
+
+
+# cat /etc/keepalived/keepalived.conf
+global_defs {
+    router_id RANCHER01
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens160
+    virtual_router_id 51
+    priority 150
+    advert_int 1
+
+    unicast_src_ip 192.168.1.31
+
+    unicast_peer {
+        192.168.1.32
+        192.168.1.33
+    }
+
+    authentication {
+        auth_type PASS
+        auth_pass Rancher1
+    }
+
+    virtual_ipaddress {
+        192.168.1.30/24 dev ens160
+    }
+}
+
+
+root@rancher001:~# cat /etc/keepalived/keepalived.conf
+global_defs {
+    router_id RANCHER01
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens160
+    virtual_router_id 51
+    priority 150
+    advert_int 1
+
+    unicast_src_ip 192.168.1.31
+
+    unicast_peer {
+        192.168.1.32
+        192.168.1.33
+    }
+
+    authentication {
+        auth_type PASS
+        auth_pass Rancher1
+    }
+
+    virtual_ipaddress {
+        192.168.1.30/24 dev ens160
+    }
+}
+
+root@rancher001:~#
+
+
+
+root@rancher002:~# cat /etc/keepalived/keepalived.conf
+global_defs {
+    router_id RANCHER02
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens160
+    virtual_router_id 51
+    priority 140
+    advert_int 1
+
+    unicast_src_ip 192.168.1.32
+
+    unicast_peer {
+        192.168.1.31
+        192.168.1.33
+    }
+
+    authentication {
+        auth_type PASS
+        auth_pass Rancher1
+    }
+
+    virtual_ipaddress {
+        192.168.1.30/24 dev ens160
+    }
+}
+
+root@rancher002:~#
+
+
+root@rancher003:~# cat /etc/keepalived/keepalived.conf
+global_defs {
+    router_id RANCHER03
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens160
+    virtual_router_id 51
+    priority 130
+    advert_int 1
+
+    unicast_src_ip 192.168.1.33
+
+    unicast_peer {
+        192.168.1.31
+        192.168.1.32
+    }
+
+    authentication {
+        auth_type PASS
+        auth_pass Rancher1
+    }
+
+    virtual_ipaddress {
+        192.168.1.30/24 dev ens160
+    }
+}
+
+root@rancher003:~#
+
+
+
+systemctl enable --now keepalived
+ip addr show ens160
+
+
+
+
+rancher001.vspheretech.com
+================================
+curl -sfL https://get.rke2.io | sudo env INSTALL_RKE2_VERSION="v1.35.7+rke2r1" sh -
+
+sudo mkdir -p /etc/rancher/rke2
+sudo vi /etc/rancher/rke2/config.yaml
+
+
+~# cat /etc/rancher/rke2/config.yaml
+tls-san:
+  - rancher.vspheretech.com
+  - 192.168.1.30
+  - rancher001.vspheretech.com
+  - 192.168.1.31
+  - rancher002.vspheretech.com
+  - 192.168.1.32
+   - rancher003.vspheretech.com
+  - 192.168.1.32
+kubelet-arg:
+  -  container-log-max-files=5
+  -  container-log-max-size=10Mi
+write-kubeconfig-mode: "0644"
+
+systemctl enable --now rke2-server
+
+cat /var/lib/rancher/rke2/server/token
+K1028f05707c6ad7a4e91c905bb2f7e19021ff75bafce0a840b6a151a6d49f762dc::server:9606436d92373073127dcf4ba34b1b9a
+
+
+
+
+
+rancher002.vspheretech.com
+=============================
+
+curl -sfL https://get.rke2.io | sudo env INSTALL_RKE2_VERSION="v1.35.7+rke2r1" sh -
+
+sudo mkdir -p /etc/rancher/rke2
+sudo vi /etc/rancher/rke2/config.yaml
+
+server: https://rancher001.vspheretech.com:9345
+
+token: K1028f05707c6ad7a4e91c905bb2f7e19021ff75bafce0a840b6a151a6d49f762dc::server:9606436d92373073127dcf4ba34b1b9a
+
+tls-san:
+  - rancher.vspheretech.com
+  - 192.168.1.30
+  - rancher001.vspheretech.com
+  - 192.168.1.31
+  - rancher002.vspheretech.com
+  - 192.168.1.32
+   - rancher003.vspheretech.com
+  - 192.168.1.32
+kubelet-arg:
+  -  container-log-max-files=5
+  -  container-log-max-size=10Mi
+write-kubeconfig-mode: "0644"
+
+
+systemctl enable --now rke2-server
+
+
+rancher003.vspheretech.com
+=============================
+
+curl -sfL https://get.rke2.io | sudo env INSTALL_RKE2_VERSION="v1.35.7+rke2r1" sh -
+
+sudo mkdir -p /etc/rancher/rke2
+sudo vi /etc/rancher/rke2/config.yaml
+
+server: https://rancher001.vspheretech.com:9345
+
+token: K1028f05707c6ad7a4e91c905bb2f7e19021ff75bafce0a840b6a151a6d49f762dc::server:9606436d92373073127dcf4ba34b1b9a
+
+tls-san:
+  - rancher.vspheretech.com
+  - 192.168.1.30
+  - rancher001.vspheretech.com
+  - 192.168.1.31
+  - rancher002.vspheretech.com
+  - 192.168.1.32
+   - rancher003.vspheretech.com
+  - 192.168.1.32
+kubelet-arg:
+  -  container-log-max-files=5
+  -  container-log-max-size=10Mi
+write-kubeconfig-mode: "0644"
+
+
+systemctl enable --now rke2-server
+
+
+
+
+
+/var/lib/rancher/rke2/bin/kubectl get node --kubeconfig=/etc/rancher/rke2/rke2.yaml
+ export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+
+
+# cp /etc/rancher/rke2/rke2.yaml .kube/config
+# cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
+
+# /var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml get po -A
+
+
+# export PATH=/var/lib/rancher/rke2/bin:$PATH
+# export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+
+
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+helm repo add jetstack https://charts.jetstack.io
+helm repo list
+
+ helm repo update
+ kubectl create namespace cert-manager
+ helm install cert-manager jetstack/cert-manager   --namespace cert-manager   --set crds.enabled=true
+ kubectl get pods -n cert-manager
+
+
+
+ helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+ helm repo update
+ helm search repo rancher-stable/rancher --versions | grep 2.15.1
+ kubectl create namespace cattle-system
+
+
+  helm install rancher rancher-stable/rancher   --namespace cattle-system   --version 2.15.1   --set hostname=rancher.vspheretech.com   --set auditLog.level=1   --set replicas=1   --set bootstrapPassword='redhat@123' --set ingress.tls.source=rancher
+ kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}'
+ kubectl get pods -n cattle-system -o wide
+ kubectl get pods -n cattle-system
+ 
+ kubectl get po -A
+ /var/lib/rancher/rke2/bin/crictl ps 
+ 
+
+ kubectl -n cattle-system describe pod rancher-6b8dfb7dc8-b55z5
+
+# kubectl -n cattle-system get ing
+NAME      CLASS    HOSTS                     ADDRESS                                  PORTS     AGE
+rancher   <none>   rancher.vspheretech.com   192.168.1.31,192.168.1.32,192.168.1.33   80, 443   21m
+
+kubectl get po -A|grep calico
+
+ kubectl get po -A|grep canal
+ 
+ 
+ 
+ C:\WINDOWS\System32\drivers\etc\hosts
+ 192.168.1.30 rancher.vspheretech.com
+ 
+ chrome - rancher.vspheretech.com
+ 
+ 
+ kubectl get pods -A --no-headers | awk '$4=="Error" {print $1, $2}' | while read ns pod; do   kubectl delete pod "$pod" -n "$ns"; done
+kubectl get pods -A --no-headers | awk '$4=="Evicted" {print $1, $2}' | while read ns pod; do   kubectl delete pod "$pod" -n "$ns"; done
+kubectl get po -A
+kubectl get pods -A --no-headers | awk '$4=="ContainerStatusUnknown" {print $1, $2}' | while read ns pod; do   kubectl delete pod "$pod" -n "$ns"; done
+
+
+
+helm upgrade
+===============
+
+ helm search repo rancher-stable/rancher --versions
+  166  helm get values rancher -n cattle-system -o yaml > rancher-values-backup.yaml
+  167  helm upgrade rancher rancher-stable/rancher   --namespace cattle-system   --version 2.15.3   -f rancher-values-backup.yaml
+  168  kubectl rollout status deployment/rancher -n cattle-system
+  169  kubectl get deployment rancher -n cattle-system   -o jsonpath='{.spec.template.spec.containers[0].image}'
+  1
 
 
 
