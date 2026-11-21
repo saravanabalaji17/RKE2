@@ -194,12 +194,21 @@ hostnamectl set-hostname rancher001.vspheretech.com
 hostnamectl set-hostname rancher002.vspheretech.com
 hostnamectl set-hostname rancher003.vspheretech.com
 
+hostnamectl set-hostname master001.vspheretech.com
+hostnamectl set-hostname master002.vspheretech.com
+hostnamectl set-hostname master003.vspheretech.com
+
+
 192.168.1.30 rancher.vspheretech.com
 192.168.1.31 rancher001.vspheretech.com
 192.168.1.32 rancher002.vspheretech.com
 192.168.1.33 rancher003.vspheretech.com
-
-
+192.168.1.34 master001.vspheretech.com
+192.168.1.35 master002.vspheretech.com
+192.168.1.36 master003.vspheretech.com
+192.168.1.37 worker001.vspheretech.com
+192.168.1.38 worker002.vspheretech.com
+192.168.1.39 worker003.vspheretech.com
 
  export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 
