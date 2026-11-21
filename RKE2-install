@@ -568,6 +568,9 @@ kubectl get pods -A --no-headers | awk '$4=="Evicted" {print $1, $2}' | while re
 kubectl get po -A
 kubectl get pods -A --no-headers | awk '$4=="ContainerStatusUnknown" {print $1, $2}' | while read ns pod; do   kubectl delete pod "$pod" -n "$ns"; done
 
+kubectl get pods -A --no-headers | awk '$4=="CreateContainerError" {print $1, $2}' | while read ns pod; do   kubectl delete pod "$pod" -n "$ns" --force --grace-period 0; done
+
+(reverse-i-search)`Ter': kubectl get pods -A --no-headers | awk '$4=="Terminating" {print $1, $2}' | while read ns pod; do   kubectl delete pod "$pod" -n "$ns" --force --grace-period 0; done
 
 
 helm upgrade
@@ -579,6 +582,8 @@ helm upgrade
   168  kubectl rollout status deployment/rancher -n cattle-system
   169  kubectl get deployment rancher -n cattle-system   -o jsonpath='{.spec.template.spec.containers[0].image}'
   1
+
+
 
 ====================================================================================================================================================================
 Traefik configuration
