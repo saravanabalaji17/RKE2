@@ -86,6 +86,24 @@ tls-san:
 # export PATH=/var/lib/rancher/rke2/bin:$PATH
 # export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 
+CRTCTL
+========
+ls -l /var/lib/rancher/rke2/agent/etc/crictl.yaml
+
+export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml
+
+cp /var/lib/rancher/rke2/bin/crictl /usr/local/bin/
+/var/lib/rancher/rke2/bin/crictl --config /var/lib/rancher/rke2/agent/etc/crictl.yaml --runtime-endpoint unix:///run/k3s/containerd/containerd.sock ps -a
+/var/lib/rancher/rke2/bin/crictl rmi ps -a
+/var/lib/rancher/rke2/bin/crictl rmi docker.io/rancher/hardened-traefik:v3.7.8-build20260717 \
+
+CTR
+====
+/var/lib/rancher/rke2/bin/ctr --address /run/k3s/containerd/containerd.sock -n k8s.io containers list
+CTR="/var/lib/rancher/rke2/bin/ctr --address /run/k3s/containerd/containerd.sock -n k8s.io"
+ctr --address /run/k3s/containerd/containerd.sock -n k8s.io containers list
+
+
 get token
 ============
 # cat /var/lib/rancher/rke2/server/node-token
@@ -516,6 +534,25 @@ total 236
 
 # export PATH=/var/lib/rancher/rke2/bin:$PATH
 # export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+
+CRTCTL
+========
+ls -l /var/lib/rancher/rke2/agent/etc/crictl.yaml
+
+export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml
+
+cp /var/lib/rancher/rke2/bin/crictl /usr/local/bin/
+/var/lib/rancher/rke2/bin/crictl --config /var/lib/rancher/rke2/agent/etc/crictl.yaml --runtime-endpoint unix:///run/k3s/containerd/containerd.sock ps -a
+/var/lib/rancher/rke2/bin/crictl rmi ps -a
+/var/lib/rancher/rke2/bin/crictl rmi docker.io/rancher/hardened-traefik:v3.7.8-build20260717 \
+
+CTR
+====
+/var/lib/rancher/rke2/bin/ctr --address /run/k3s/containerd/containerd.sock -n k8s.io containers list
+CTR="/var/lib/rancher/rke2/bin/ctr --address /run/k3s/containerd/containerd.sock -n k8s.io"
+ctr --address /run/k3s/containerd/containerd.sock -n k8s.io containers list
+
+
 
 
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
